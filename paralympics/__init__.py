@@ -1,6 +1,16 @@
 import os
 
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+db = SQLAlchemy(model_class=Base)
 
 
 def create_app(test_config=None):
@@ -27,9 +37,17 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+    db.init_app(app)
+
+    # Models are defined in the models module, so you must import them before calling create_all, otherwise SQLAlchemy
+    # will not know about them.
+    from paralympics.models import User, Region, Event
+    # Create the tables in the database
+    # create_all does not update tables if they are already in the database.
     with app.app_context():
+        db.create_all()
+
         # Register the routes with the app in the context
-       from paralympics import paralympics
+        from paralympics import paralympics
 
     return app
-    
